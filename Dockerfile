@@ -2,20 +2,20 @@
 FROM node:18-alpine AS deps
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies (including devDependencies for build)
 COPY package.json package-lock.json ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Copy dependencies
+# Copy all dependencies (dev + prod needed for build)
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Next.js의 텔레메트리 비활성화
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Standalone 빌드
 RUN npm run build
@@ -24,8 +24,8 @@ RUN npm run build
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # 보안을 위한 사용자 생성
 RUN addgroup --system --gid 1001 nodejs
@@ -43,8 +43,8 @@ USER nextjs
 # 포트 노출
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 # 서버 실행
 CMD ["node", "server.js"]
