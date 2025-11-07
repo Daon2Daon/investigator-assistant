@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  investigator-assistant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: investigator-assistant
+    restart: unless-stopped
+    ports:
+      - "1219:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # Gemini API Key를 환경변수로 주입
+      # 방법 1: 직접 입력 (보안 주의!)
+      # - GEMINI_API_KEY=your_api_key_here
+      # 방법 2: .env 파일 사용 (권장)
+    env_file:
+      - .env.production
+    volumes:
+      # 로그 저장 (선택사항)
+      - ./logs:/app/logs
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  app-network:
+    driver: bridge
+
