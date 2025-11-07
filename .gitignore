@@ -64,3 +64,8 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# Docker
+*.tar
+*.tar.gz
+docker-data/
+
